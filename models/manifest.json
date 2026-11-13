@@ -1,0 +1,30 @@
+{
+  "target": "rk3576",
+  "classes": {
+    "0": "forklift",
+    "1": "person"
+  },
+  "input": {
+    "shape": [
+      1,
+      640,
+      640,
+      3
+    ],
+    "layout": "NHWC",
+    "color": "RGB",
+    "type": "uint8"
+  },
+  "toolkit_version": "2.3.2",
+  "source_checkpoint_sha256": "83deebeb473009ab10f4568ccacb925336382c54d7772deb1652b1a5810f5dcb",
+  "models": {
+    "warehouse_yolo11_rk3576_fp16.rknn": {
+      "sha256": "58780b67d03f7c77b5ce71ddfc4a5be69fbe7eb1bbe24275f6dfd82cabce4228",
+      "bytes": 9708946
+    },
+    "warehouse_yolo11_rk3576_int8.rknn": {
+      "sha256": "8f9bc966a969c0c26e136b85eeae16c5c13512986602389a8a81c1d69778aaa5",
+      "bytes": 7178260
+    }
+  }
+}

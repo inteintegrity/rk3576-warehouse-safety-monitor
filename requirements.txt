@@ -1,0 +1,8 @@
+ultralytics==8.4.96
+lap==0.5.14
+opencv-python==4.11.0.86
+numpy==1.26.4
+scipy>=1.11,<2
+Pillow>=10
+PyYAML>=6
+# Install official rknn-toolkit-lite2==2.3.2 separately on the RK3576.
