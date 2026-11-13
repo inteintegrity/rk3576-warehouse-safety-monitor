@@ -39,52 +39,42 @@ Checksums and input information are in [models/manifest.json](models/manifest.js
 These models are converted from the original warehouse checkpoint, not stock COCO
 weights. Stock COCO weights do not contain a forklift class.
 
-## Install on the board
+## Quick start on the board
 
-Use Python 3.11 on ARM64. Install the official matching
-[RKNN Toolkit Lite2 2.3.2 wheel](https://github.com/airockchip/rknn-toolkit2)
-for the board's Python version. Reuse a working RKNN runtime when available.
-The tested environment used Torch 2.2.0 and torchvision 0.17.0; ByteTrack runs on CPU.
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install torch==2.2.0 torchvision==0.17.0
-python -m pip install -r requirements.txt
-# Install the official rknn_toolkit_lite2 2.3.2 ARM64 wheel for your Python version.
-```
-
-On an existing board environment with OpenCV, Torch and Lite2 already installed,
-activate that environment and install only missing dependencies. Do not install
-desktop PyTorch wheels or the full conversion toolkit on the board unnecessarily.
-
-## Run
+Use ARM64 Linux with Python 3.11 and a working RK3576 NPU driver/runtime.
+The launcher uses a project-local `.venv`, an activated environment, or the
+explicit `WAREHOUSE_PYTHON` interpreter. It does not replace system libraries.
 
 ```bash
-# Download the unchanged upstream sample; media is not stored in this repository.
-python tools/fetch_sample.py
-
-# Real NPU inference, final red/yellow/green alert rules.
-python scripts/run_demo.py --backend rknn \
-  --model models/warehouse_yolo11_rk3576_int8.rknn \
-  --output outputs/demo
-
-# Optional local dashboard.
-python server.py --host 0.0.0.0 --port 8088
+git clone https://github.com/inteintegrity/rk3576-warehouse-safety-monitor.git
+cd rk3576-warehouse-safety-monitor
+bash run.sh setup
+bash run.sh web
 ```
 
-Open `http://<board-ip>:8088` on your trusted LAN. The single-operator dashboard
-provides MJPEG preview, current pairs, and completed-run downloads. It has no
-authentication and is intended for a trusted demo network.
+`setup` installs the Python dependencies and official RKNN Lite2 2.3.2 package,
+verifies model hashes, and downloads the unchanged upstream sample. Fresh
+installations also need disk space for PyTorch. Existing working environments
+can be reused by activating them before running the script.
 
-For another source, add `--source /path/to/video.mp4`, `--source 0` for USB, or
-`--source rtsp://...`. Only file-source inference was verified during this reproduction.
-Live recording uses nominal camera FPS, so playback timing can differ from capture time.
+Open `http://<board-ip>:8088` on your trusted LAN and select **Start analysis**.
+Press Ctrl+C in the terminal to stop the server. The dashboard is a
+single-operator LAN demo without authentication.
 
-Each run writes `annotated.mp4`, `events.csv`, `summary.json`, and
-`frame-trace.jsonl` under the selected output directory. The live overlay uses
-lightweight zone outlines and red danger boxes.
+Other commands:
+
+```bash
+bash run.sh video
+bash run.sh video --source /path/to/video.mp4
+bash run.sh web --port 8089
+bash run.sh check
+bash run.sh test
+```
+
+The `video` command saves `annotated.mp4`, `events.csv`, `summary.json`, and
+`frame-trace.jsonl` under `outputs/demo`. File-source inference was verified;
+USB/RTSP camera capture still needs validation with the intended devices.
+`bash run.sh --help` lists available commands.
 
 ## Alert rules
 
@@ -110,12 +100,7 @@ Copy the original sample and the board's completed output directory to a desktop
 machine with Pillow and OpenCV. Run from this repository root:
 
 ```bash
-python tools/render_halo.py --run outputs/demo \
-  --output outputs/showcase/warehouse-safety-master.mp4
-
-ffmpeg -y -i outputs/showcase/warehouse-safety-master.mp4 \
-  -c:v libx264 -crf 18 -preset medium -pix_fmt yuv420p -movflags +faststart \
-  outputs/showcase/warehouse-safety.mp4
+bash run.sh render outputs/demo
 ```
 
 The glow is offline presentation work. Boxes, identities, warning states, and
@@ -143,8 +128,7 @@ it is not an independent accuracy test.
 ## Validation
 
 ```bash
-python -m pip install -r requirements-dev.txt
-python -m pytest tests -q --basetemp .test-tmp
+bash run.sh test
 ```
 
 Eight regression checks cover operator exclusion, DFL equivalence, preprocessing,
